@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  password      String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  profile       Profile?
+  weightEntries WeightEntry[]
+  shipments     Shipment[]
+}
+
+model Profile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetWeight     Float?
+  height           Float?
+  startingWeight   Float?
+  currentMedication String?
+  dosage           String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model WeightEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weight    Float
+  date      DateTime @default(now())
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Shipment {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicationType    String
+  dosage            String
+  status            String    @default("processing") // processing, shipped, delivered, delayed
+  trackingNumber    String?
+  shippedDate       DateTime?
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+  createdAt         DateTime  @default(now())
+}
